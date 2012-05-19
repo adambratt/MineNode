@@ -13,7 +13,7 @@ var checkServers = function () {
   for (x in serverList){
     console.log('Trying server: '+x);
     var client = net.connect(x, 'blockempires.com', function() { //'connect' listener
-      console.log('Connected to server');
+      console.log('Connected to server: '+this.remotePort);
       this.write(Buffer('FE','hex'));
     }).on('data', function(data) {
       var output = data.toString().replace(/\u0000/g,'');
@@ -22,13 +22,13 @@ var checkServers = function () {
         var specialchar = output[0];
         output = output.split(specialchar);
         output.shift();
-        serverList[x].motd = output[0].substr(1);
-        serverList[x].players = output[1];
-        serverList[x].max = output[2];
+        serverList[this.remotePort].motd = output[0].substr(1);
+        serverList[this.remotePort].players = output[1];
+        serverList[this.remotePort].max = output[2];
         this.end();
       }
     }).on('error', function(err) {
-      console.log("Error on server: "+x+", \n"+err);
+      console.log("Error on server: "+this.remotePort+", \n"+err);
     });
   }
   io.sockets.emit('status', serverList);
